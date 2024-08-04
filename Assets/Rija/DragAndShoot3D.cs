@@ -5,30 +5,18 @@ public class DragAndShoot3D : MonoBehaviour
     public GameObject ballPrefab; // Prefab of the ball
     public Transform shootPoint; // Point from where the ball is shot
     public float shootForce = 10f; // Force applied to the ball
+    public LineRenderer trajectoryRenderer; // LineRenderer for showing trajectory
 
     private Vector3 startPos;
     private Camera cam;
     private GameObject currentBall;
-    private Rigidbody ballRb;
-    private bool isDragging = false;
 
     void Start()
     {
         cam = Camera.main;
-
-        if (cam == null)
+        if (trajectoryRenderer == null)
         {
-            Debug.LogError("Main Camera not found.");
-        }
-
-        if (ballPrefab == null)
-        {
-            Debug.LogError("Ball prefab is not assigned.");
-        }
-
-        if (shootPoint == null)
-        {
-            Debug.LogError("Shoot point is not assigned.");
+            Debug.LogError("Trajectory Renderer is not assigned.");
         }
     }
 
@@ -38,11 +26,11 @@ public class DragAndShoot3D : MonoBehaviour
         {
             OnDragStart();
         }
-        else if (Input.GetMouseButton(0) && isDragging)
+        else if (Input.GetMouseButton(0))
         {
             OnDrag();
         }
-        else if (Input.GetMouseButtonUp(0) && isDragging)
+        else if (Input.GetMouseButtonUp(0))
         {
             OnDragEnd();
         }
@@ -50,40 +38,48 @@ public class DragAndShoot3D : MonoBehaviour
 
     void OnDragStart()
     {
-        startPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane + 10f));
-        isDragging = true; // Set dragging state to true
+        startPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
+        currentBall = Instantiate(ballPrefab, shootPoint.position, Quaternion.identity);
+        DrawTrajectory();
     }
 
     void OnDrag()
     {
-        // Optionally, you can implement visual feedback during dragging
+        Vector3 currentPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
+        Vector3 direction = startPos - currentPos;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        currentBall.transform.rotation = Quaternion.Euler(new Vector3(0, -angle, 0));
+        DrawTrajectory();
     }
 
     void OnDragEnd()
     {
-        if (!isDragging) return;
-
-        Vector3 endPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane + 10f));
+        Vector3 endPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
         Vector3 direction = startPos - endPos;
+        currentBall.GetComponent<Rigidbody>().velocity = direction * shootForce;
+        currentBall = null;
+        ClearTrajectory();
+    }
 
-        // Instantiate the ball at the shootPoint
-        currentBall = Instantiate(ballPrefab, shootPoint.position, Quaternion.identity);
-        ballRb = currentBall.GetComponent<Rigidbody>();
+    void DrawTrajectory()
+    {
+        if (trajectoryRenderer == null) return;
 
-        if (ballRb == null)
+        // Example points for the trajectory
+        Vector3[] points = new Vector3[30];
+        for (int i = 0; i < points.Length; i++)
         {
-            Debug.LogError("Rigidbody component missing on currentBall.");
-            return;
+            float t = i / (float)(points.Length - 1);
+            points[i] = shootPoint.position + (startPos - shootPoint.position) * t;
         }
 
-        // Apply force to the ball in the direction of the drag
-        ballRb.velocity = direction * shootForce;
+        trajectoryRenderer.positionCount = points.Length;
+        trajectoryRenderer.SetPositions(points);
+    }
 
-        // Optionally destroy the ball after some time
-        Destroy(currentBall, 2f); // Destroy ball after 2 seconds
-
-        currentBall = null;
-        ballRb = null;
-        isDragging = false; // Set dragging state to false
+    void ClearTrajectory()
+    {
+        if (trajectoryRenderer == null) return;
+        trajectoryRenderer.positionCount = 0;
     }
 }
