@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 
-public class ArrowForce : MonoBehaviour {
-    
+public class ArrowForce : MonoBehaviour
+{
+
     private Rigidbody rb;
     public float shootForce = 2000;
 
     //Whenever the script get's enabled
-    private void OnEnable() {
+    private void OnEnable()
+    {
         rb = GetComponent<Rigidbody>(); //we'll get the rigidbody of the arrow
         rb.velocity = Vector3.zero; //zero-out the velocity
         ApplyForce(); //Apply force so the arrow flies
@@ -17,4 +19,12 @@ public class ArrowForce : MonoBehaviour {
 
     //Apply force to the rigidbody in the direction the player is facing
     private void ApplyForce() { rb.AddRelativeForce(Vector3.right * shootForce); }
+    void OnCollisionEnter(Collision collision)
+    {
+        Rope rope = collision.gameObject.GetComponent<Rope>();
+        if (rope != null)
+        {
+            rope.Break();
+        }
+    }
 }
