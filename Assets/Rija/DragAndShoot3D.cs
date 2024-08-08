@@ -8,16 +8,31 @@ public class DragAndShoot3D : MonoBehaviour
     public LineRenderer trajectoryRenderer; // LineRenderer for showing trajectory
 
     private Vector3 startPos;
+    private Vector3 endPos;
     private Camera cam;
-    private GameObject currentBall;
+    private GameObject mainBall;
+    private bool isDragging = false;
 
     void Start()
     {
         cam = Camera.main;
+
+        if (shootPoint == null)
+        {
+            Debug.LogError("Shoot point is not assigned.");
+        }
+
         if (trajectoryRenderer == null)
         {
             Debug.LogError("Trajectory Renderer is not assigned.");
         }
+        else
+        {
+            trajectoryRenderer.positionCount = 0;
+        }
+
+        // Instantiate the main ball at the shoot point
+        mainBall = Instantiate(ballPrefab, shootPoint.position, Quaternion.identity);
     }
 
     void Update()
@@ -39,41 +54,54 @@ public class DragAndShoot3D : MonoBehaviour
     void OnDragStart()
     {
         startPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
-        currentBall = Instantiate(ballPrefab, shootPoint.position, Quaternion.identity);
-        DrawTrajectory();
+        isDragging = true;
     }
 
     void OnDrag()
     {
+        if (!isDragging) return;
+
         Vector3 currentPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
         Vector3 direction = startPos - currentPos;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        currentBall.transform.rotation = Quaternion.Euler(new Vector3(0, -angle, 0));
-        DrawTrajectory();
+        mainBall.transform.rotation = Quaternion.Euler(new Vector3(0, -angle, 0));
+
+        // Draw the trajectory from the main ball's position
+        DrawTrajectory(mainBall.transform.position, direction * shootForce);
     }
 
     void OnDragEnd()
     {
-        Vector3 endPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
+        if (!isDragging) return;
+
+        endPos = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.nearClipPlane));
         Vector3 direction = startPos - endPos;
-        currentBall.GetComponent<Rigidbody>().velocity = direction * shootForce;
-        currentBall = null;
+        Rigidbody rb = mainBall.GetComponent<Rigidbody>();
+        rb.velocity = direction.normalized * shootForce;
+
+        // Clear the trajectory
         ClearTrajectory();
+
+        // Re-instantiate the main ball at the shoot point
+        mainBall = Instantiate(ballPrefab, shootPoint.position, Quaternion.identity);
+        isDragging = false;
     }
 
-    void DrawTrajectory()
+    void DrawTrajectory(Vector3 startPoint, Vector3 velocity)
     {
         if (trajectoryRenderer == null) return;
 
-        // Example points for the trajectory
-        Vector3[] points = new Vector3[30];
-        for (int i = 0; i < points.Length; i++)
+        float timeStep = 0.1f;
+        int numPoints = 30;
+        Vector3[] points = new Vector3[numPoints];
+        trajectoryRenderer.positionCount = numPoints;
+
+        for (int i = 0; i < numPoints; i++)
         {
-            float t = i / (float)(points.Length - 1);
-            points[i] = shootPoint.position + (startPos - shootPoint.position) * t;
+            float t = i * timeStep;
+            points[i] = startPoint + (velocity * t) + 0.5f * Physics.gravity * t * t;
         }
 
-        trajectoryRenderer.positionCount = points.Length;
         trajectoryRenderer.SetPositions(points);
     }
 
