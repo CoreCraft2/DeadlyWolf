@@ -5,28 +5,40 @@ using UnityEngine;
 public class WolfMovement : MonoBehaviour
 {
     public float speed = 2.0f;
-    public float leftBound = -3.0f;
-    public float rightBound = 3.0f;
+    public float forwardBound = 3.0f;  // Maximum Z value for forward movement
+    public float backwardBound = -3.0f;  // Minimum Z value for backward movement
 
-    private bool movingRight = true;
+    private bool movingForward = true;
 
     void Update()
     {
-        if (movingRight)
+        Vector3 moveDirection;
+
+        if (movingForward)
         {
-            transform.Translate(Vector3.right * speed * Time.deltaTime);
-            if (transform.position.x >= rightBound)
+            // Move forward along the local Z-axis
+            moveDirection = transform.forward;
+            transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
+
+            // If the wolf's position in Z exceeds or equals the forward bound, change direction
+            if (transform.position.z >= forwardBound)
             {
-                movingRight = false;
+                movingForward = false; // Switch to moving backward
             }
         }
         else
         {
-            transform.Translate(Vector3.left * speed * Time.deltaTime);
-            if (transform.position.x <= leftBound)
+            // Move backward along the local Z-axis
+            moveDirection = -transform.forward;
+            transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
+
+            // If the wolf's position in Z is less than or equal to the backward bound, change direction
+            if (transform.position.z <= backwardBound)
             {
-                movingRight = true;
+                movingForward = true; // Switch to moving forward
             }
         }
+
+        Debug.Log("Current Z Position: " + transform.position.z + " | Moving Forward: " + movingForward);
     }
 }
