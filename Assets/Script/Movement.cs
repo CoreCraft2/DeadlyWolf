@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WolfMovement : MonoBehaviour
+public class Movement : MonoBehaviour
 {
     public float speed = 2.0f;
     public float forwardBound = 3.0f;  // Maximum Z value for forward movement
