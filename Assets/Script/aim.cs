@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class aim : MonoBehaviour
@@ -9,7 +7,7 @@ public class aim : MonoBehaviour
     private bool crouch = false;
     private Vector3 ogScale;
     [SerializeField] float verSensitivity = 2;
-    [SerializeField] float horSensitivity = 2;
+    //[SerializeField] float horSensitivity = 2;
     [SerializeField] float speed = 0.5f;
     [SerializeField] float jumpForce = 1f;
     [SerializeField] float crouchScale = 1.5f;

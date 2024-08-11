@@ -5,6 +5,7 @@ public class Stone : MonoBehaviour
     public Animator wolfAnimator; // Reference to the wolf's Animator
     public ParticleSystem smokeEffect; // Reference to the smoke particle system
     public CameraShake cameraShake; // Reference to the CameraShake script
+    public LayerMask groundLayer; // Assign the ground layer in the inspector
 
     private bool hasCollidedWithWolf = false;
 
@@ -28,6 +29,7 @@ public class Stone : MonoBehaviour
             if (wolfAnimator != null)
             {
                 wolfAnimator.SetBool("isDied", true);
+                GameManager.Instance.CompleteLevel();
             }
             else
             {
@@ -56,6 +58,12 @@ public class Stone : MonoBehaviour
 
             // Destroy the stone after the particle effect duration
             Destroy(gameObject, smokeEffect.main.duration);
+        }
+        // Check if the stone has collided with the ground and hasn't collided with the wolf yet
+        else if (collision.gameObject.layer == LayerMask.NameToLayer("Ground") && !hasCollidedWithWolf)
+        {
+            GameManager.Instance.FailLevel();
+            Destroy(gameObject); // Optionally destroy the stone on ground collision
         }
     }
 }
