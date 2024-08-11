@@ -32,14 +32,12 @@ public class GameManager : MonoBehaviour
     public void CompleteLevel()
     {
         levelCompleteUI?.SetActive(true);
-        Time.timeScale = 0f;
     }
 
     // Function to fail the level
     public void FailLevel()
     {
         levelFailedUI?.SetActive(true);
-        Time.timeScale = 0f;
     }
 
     // Function to pause the game
