@@ -5,27 +5,16 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-
     [SerializeField] private GameObject pauseMenuUI;
     [SerializeField] private GameObject levelCompleteUI;
     [SerializeField] private GameObject levelFailedUI;
 
     private bool isPaused = false;
 
-
-
     private void Awake()
     {
-        // Ensure there's only one instance of GameManager
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // Persist through scene changes
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        // Ensure there's only one instance of GameManager in each scene
+        Instance = this;
     }
 
     // Function to complete the level
@@ -69,7 +58,6 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-
     public void LoadNextLevel()
     {
         Time.timeScale = 1f;
@@ -81,6 +69,4 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f; // Ensure the game is running normally
         SceneManager.LoadScene(sceneName);
     }
-
-   
 }
