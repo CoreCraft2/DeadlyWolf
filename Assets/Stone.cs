@@ -87,10 +87,10 @@ public class Stone : MonoBehaviour
             DeactivateStone();
             StoneManager.Instance.ScheduleRespawn(this, respawnDelay); // Schedule respawn
         }
-        else if(attemptsLeft == 0)
+        else if (attemptsLeft == 0)
         {
             GameManager.Instance.FailLevel();
-           // DeactivateStone(); // Optionally deactivate the stone if out of attempts
+            // DeactivateStone(); // Optionally deactivate the stone if out of attempts
         }
     }
 
